@@ -874,7 +874,7 @@ class save_functions(object):
         if ncid == None: return
             
         ncattrs = OD()    
-        ncattrs['type'] = 'FVCOM TIME SERIES OBS TS FORCING FILE'
+        ncattrs['type'] = 'FVCOM TIME SERIES OBC TS FILE'
         ncattrs['title'] = 'FVCOM HYDROGRAPHIC OPEN BOUNDARY FORCING FILE'
         ncattrs['history'] = 'File created using fvcom_tsobc from the Python fvcom_pyprocessor toolbox on ' + ttime.ctime()
             
