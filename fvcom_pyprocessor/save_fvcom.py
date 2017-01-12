@@ -44,7 +44,7 @@ class save_functions(object):
         return      
 
     
-    def fvcom_grd(self, casename=[]):
+    def fvcom_grd(self, casename=[], isll=False):
         """
         Save an FVCOM_grd.dat file from an FVCOM object.
         """
@@ -65,14 +65,20 @@ class save_functions(object):
         fp.write('Cell Number = {}\n'.format(self.mesh.nele))
                 
         for i in range(0,self.mesh.nele):
-            fp.write('{} {} {} {} {}\n'.format(i+1,self.mesh.nv[i,0],
-                                                   self.mesh.nv[i,1],
-                                                   self.mesh.nv[i,2],0))
+            fp.write('{} {} {} {} {}\n'.format(i+1,self.mesh.nv[i,0]+1,
+                                                   self.mesh.nv[i,1]+1,
+                                                   self.mesh.nv[i,2]+1,0))
 
-        for i in range(0,self.mesh.nnodes):
-            fp.write('{} {} {} {}\n'.format(i+1,self.mesh.nodell[i,0],
-                                                self.mesh.nodell[i,1],
-                                                self.mesh.h[i]))
+        if isll:
+            for i in range(0,self.mesh.nnodes):
+                fp.write('{} {} {} {}\n'.format(i+1,self.mesh.nodell[i,0],
+                                                    self.mesh.nodell[i,1],
+                                                    self.mesh.h[i]))
+        else:
+            for i in range(0,self.mesh.nnodes):
+                fp.write('{} {} {} {}\n'.format(i+1,self.mesh.nodexy[i,0],
+                                                    self.mesh.nodexy[i,1],
+                                                    self.mesh.h[i]))
         fp.close()
         
         self._history.append('Wrote ' + filename)
@@ -93,14 +99,14 @@ class save_functions(object):
 
         if isll:
             for i in range(0,self.mesh.nnodes):
-                fp.write('{} {} {} {}\n'.format(i+1,self.mesh.nodell[i,0],
-                                                    self.mesh.nodell[i,1],
-                                                    self.mesh.h[i]))
+                fp.write('{} {} {}\n'.format(self.mesh.nodell[i,0],
+                                             self.mesh.nodell[i,1],
+                                             self.mesh.h[i]))
         else:
             for i in range(0,self.mesh.nnodes):
-                fp.write('{} {} {} {}\n'.format(i+1,self.mesh.nodexy[i,0],
-                                                    self.mesh.nodexy[i,1],
-                                                    self.mesh.h[i]))
+                fp.write('{} {} {}\n'.format(self.mesh.nodexy[i,0],
+                                             self.mesh.nodexy[i,1],
+                                             self.mesh.h[i]))
         fp.close()
         
         self._history.append('Wrote ' + filename)
@@ -205,30 +211,25 @@ class save_functions(object):
         return
 
 
-    def fvcom_bfric(self, casename=[], bfric=[]):
+    def fvcom_bfric(self, casename=[], bfricnodes=[], bfric=[]):
         """
         Save an FVCOM_bfric.dat file from an FVCOM object.
         Uses the specified bfric values at each element.
         """
         self = self.fv   
-         
-        if bfric==[]:
-            if hasattr(self, 'bfric'):
-                bfric = self.mesh.bfric       
-        
-        if not ((len(bfric) == self.mesh.nnodes) or (len(bfric) == 0)):
-            print('bfric must be the length of mesh.nnodes')
+     
+        if len(bfricnodes) is not len(bfric):
             return
-                   
+                           
         fp, filename = _file_factory(self, casename, '_bfric.dat')
         if fp == None: return
             
         if self._debug: print('-Writing ' + filename + ' contents-')
         
-        fp.write('BFRIC Node Number = {}\n'.format(self.mesh.nnodes))
+        fp.write('BFRIC Node Number = {}\n'.format(len(bfricnodes)))
 
-        for i in range(0, len(bfric)):
-            fp.write('{} {}\n'.format(i+1,bfric[i]))
+        for i,node in enumerate(bfricnodes):
+            fp.write('{} {}\n'.format(node,bfric[i]))
 
         fp.close()
         
