@@ -262,5 +262,49 @@ def fix_nanzero(mesh, datain, fixnan=True, fixzero=True, cutoff=0):
         
     return data  
     
+
+def sort_boundary(mesh):
+    """
+    Given a mesh it sorts the external boundary and returns it as an array.
+    """
+    
+    boundary = 1
+    
+    bcode = mesh._boundary_code
+    nodenumber = mesh._nodenumber
+    neighbours = mesh._neighbours
+    
+    nn = copy.deepcopy(nodenumber[bcode==boundary]).astype(int)
+    nnei = copy.deepcopy(neighbours[bcode==boundary]).astype(int)
+    
+    #find the neighbour of the first node
+    idx = np.argwhere(nnei==nn[0])[0][0]
+    
+    #have to use temp values with copy as the standard swap doesn't work when things are swapped again and again.
+    #there must be a more python way to hand that....
+    tmpval = nn[1].copy()
+    nn[1] = nn[idx]
+    nn[idx] = tmpval    
+    tmpval = nnei[1,:].copy()
+    nnei[1,:] = nnei[idx,:]
+    nnei[idx,:] = tmpval
+   
+    for i in range(1,len(nn)-1):
+        for j in range(mesh.max_neighbours):
+            nei = nnei[i,j]
+            if nei==0: continue
+            idx = np.argwhere(nn[(i+1):]==nei)
+
+            if len(idx)==1:
+                tmpval = nn[(i+1)].copy()
+                nn[(i+1)] = nn[(idx+i+1)]
+                nn[(idx+i+1)] = tmpval                
+                tmpval = nnei[(i+1),:].copy()
+                nnei[(i+1),:] = nnei[(idx+i+1),:]
+                nnei[(idx+i+1),:] = tmpval
+                break
+               
+    return nn
+    
     
 
